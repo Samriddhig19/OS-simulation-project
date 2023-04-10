@@ -1,0 +1,78 @@
+MAX_PROCESSES = 100
+
+class Process:
+    def _init_(self, pid, priority, remaining_time):
+        self.pid = pid
+        self.priority = priority
+        self.remaining_time = remaining_time
+        self.quantum = 2
+
+def main():
+    # Initializing the queues and Reading the number of processes
+    queue1 = []
+    queue2 = []
+
+    num_processes = int(input("Enter the number of processes: "))
+
+    # Read the processes and add them to the queues
+    for i in range(num_processes):
+        pid, priority, remaining_time = map(int, input(f"Enter the process ID, priority, and remaining time for process {i + 1}: ").split())
+        if priority == 0:
+            queue1.append(Process(pid, priority, remaining_time))
+        else:
+            queue2.append(Process(pid, priority, remaining_time))
+
+    # Process the first queue using preemptive priority scheduling
+    time = 0
+    while queue1 or queue2:
+        # Check if there are any processes in the first queue
+        if queue1:
+            # Find the highest-priority process
+            highest_priority = max(queue1, key=lambda p: p.priority)
+            # Get the index of the process with the highest priority
+            highest_priority_index = queue1.index(highest_priority)
+
+            # Get the process with the highest priority
+            p = queue1[highest_priority_index]
+
+            # Run the process for a time slice of 2 units
+            print(f"Time {time}: Running process {p.pid}")
+            p.remaining_time -= 2
+            time += 2
+
+            # Check if the process has finished
+            if p.remaining_time == 0:
+                # Remove the process from the first queue
+                queue1.pop(highest_priority_index)
+
+                # Print a message indicating that the process has finished
+                print(f"Time {time}: Process {p.pid} finished")
+            else:
+                # Move the process to the second queue
+                p.quantum = 2
+                queue2.append(queue1.pop(highest_priority_index))
+
+        # Process the second queue using Round Robin scheduling
+        if queue2:
+            # Get the process at the front of the queue
+            p = queue2[0]
+
+            # Run the process for a time slice of its quantum
+            print(f"Time {time}: Running process {p.pid}")
+            p.remaining_time -= p.quantum
+            time += p.quantum
+
+            # Check if the process has finished
+            if p.remaining_time <= 0:
+                # Remove the process from the second queue
+                queue2.pop(0)
+
+                # Print a message indicating that the process has finished
+                print(f"Time {time}: Process {p.pid} finished")
+            else:
+                # Move the process to the end of the second queue
+                queue2.append(queue2.pop(0))
+
+if _name_ == "_main_":
+    main()
+ 
